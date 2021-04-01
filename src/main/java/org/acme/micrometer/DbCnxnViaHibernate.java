@@ -35,11 +35,11 @@ public class DbCnxnViaHibernate {
         totalBuildsCounter.increment(getLatestTotalCountOfBuilds());
     }
 
-    private int getLatestTotalCountOfBuilds() {
+    private double getLatestTotalCountOfBuilds() {
         EntityManager entityManager = emFactory.createEntityManager();
         String qry = "SELECT count(*) FROM ArchivedBuilds WHERE temporaryBuild = false";
         List rs = entityManager.createQuery(qry).getResultList();
-        return (int) rs.get(0);
+        return (double)(rs.get(0));
     }
 
     @GET
