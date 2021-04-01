@@ -44,7 +44,6 @@ public class DbCnxnViaHibernate {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/count")
     public double getCurrentTotalBuildsCount() {
-        totalBuildsCounter.increment();
         System.out.println("getCurrentTotalBuildsCount = " + totalBuildsCounter.count());
         return totalBuildsCounter.count();
     }
