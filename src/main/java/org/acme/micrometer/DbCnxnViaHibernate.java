@@ -14,7 +14,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
 
 @Path("/")
 @ApplicationScoped
@@ -38,8 +37,7 @@ public class DbCnxnViaHibernate {
     private double getLatestTotalCountOfBuilds() {
         EntityManager entityManager = emFactory.createEntityManager();
         String qry = "SELECT count(*) FROM ArchivedBuilds WHERE temporaryBuild = false";
-        List rs = entityManager.createQuery(qry).getResultList();
-        return (double)(rs.get(0));
+        return entityManager.createQuery(qry).getFirstResult();
     }
 
     @GET
