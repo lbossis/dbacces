@@ -2,6 +2,8 @@ package org.acme.micrometer;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -19,6 +21,7 @@ import javax.ws.rs.core.MediaType;
 @ApplicationScoped
 public class DbCnxnViaHibernate {
     private static final String className = DbCnxnViaHibernate.class.getName();
+    private static final Logger log = LoggerFactory.getLogger(DbCnxnViaHibernate.class);
 
     @Inject
     EntityManagerFactory emFactory;
@@ -37,7 +40,14 @@ public class DbCnxnViaHibernate {
     private double getLatestTotalCountOfBuilds() {
         EntityManager entityManager = emFactory.createEntityManager();
         String qry = "SELECT count(*) FROM ArchivedBuilds WHERE temporaryBuild = false";
-        return entityManager.createQuery(qry).getFirstResult();
+        try {
+            return entityManager.createQuery(qry).getFirstResult();
+        } catch(ClassCastException e) {
+            log.error("count qry failed on cast: " + e.getMessage());
+        } catch(Exception e) {
+            log.error("count qry failed: " + e.getMessage());
+        }
+        return 0.0;
     }
 
     @GET
