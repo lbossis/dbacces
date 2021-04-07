@@ -35,6 +35,7 @@ public class DbCnxnViaHibernate {
     private static final String shortDateFormat = "yyyy-MM-dd";
     private static final Locale localeUS = new Locale("en", "US");
     private static final DateFormat dateFormatUS = new SimpleDateFormat(shortDateFormat, localeUS);
+    private static final int LOG_INFO_FREQUENCY = 10;
 
     @Inject
     EntityManagerFactory emFactory;
@@ -46,6 +47,7 @@ public class DbCnxnViaHibernate {
     private Counter totalBuildsCounter;
     private Counter systemErrorsCounter;
     private String fromDate = "1970-01-01";
+    private long loggingCount = 0;
 
     @PostConstruct
     void init() {
@@ -57,7 +59,9 @@ public class DbCnxnViaHibernate {
     private Date symbolic2javaDate(String dt) {
         try {
             Date rs = dateFormatUS.parse(dt);
-            log.info("Converted to Date: " + rs);
+            if (loggingCount % LOG_INFO_FREQUENCY == 0) {
+                log.info(dt + " has been converted to Date: " + rs);
+            }
             return rs;
         } catch (ParseException e) {
             log.error("conversion to Date failed: " + e.getMessage());
@@ -84,15 +88,22 @@ public class DbCnxnViaHibernate {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/total_count")
     public double showTotalBuildsCount() {
-        double cnt = getTotalBuildsCount();
         double currentTotalCount = totalBuildsCounter.count();
-        double delta = cnt - currentTotalCount;
+        double actualTotalCount = getTotalBuildsCount();
+        double delta = actualTotalCount - currentTotalCount;
         if (delta > 0) {
             totalBuildsCounter.increment(delta);
-            log.info("showTotalBuildsCount: count increased -> " + cnt);
-
+            /**
+             * Skip reporting total count increase at startup since it starts from zero
+             * and gets increased to its current database value
+             */
+            if (currentTotalCount > 0) {
+                log.info("Total count has been increased -> " + actualTotalCount);
+            }
         } else {
-            log.info("showTotalBuildsCount: count has not changed -> " + cnt);
+            if (loggingCount % LOG_INFO_FREQUENCY == 0) {
+                log.info("showTotalBuildsCount() -> " + actualTotalCount);
+            }
         }
         return totalBuildsCounter.count();
     }
@@ -109,12 +120,22 @@ public class DbCnxnViaHibernate {
             log.error("Invalid 'to' parameter: " + to);
             return -1;
         }
+        double currentSysErrorsCount = systemErrorsCounter.count();
         fromDate = from;
         Date javaDateFrom = symbolic2javaDate(from);
         Date javaDateTo = symbolic2javaDate(to);
-        double cnt = getSystemErrorsCount(javaDateFrom, javaDateTo);
-        log.info("showSystemErrorsCount() -> " + cnt);
-        systemErrorsCounter.increment(cnt);
+        double actualSysErrorCount = getSystemErrorsCount(javaDateFrom, javaDateTo);
+        double delta = actualSysErrorCount - currentSysErrorsCount;
+        if (delta > 0) {
+            systemErrorsCounter.increment(delta);
+            if (currentSysErrorsCount > 0) {
+                log.info("System errors count has been increased -> " + actualSysErrorCount);
+            }
+        } else {
+            if (loggingCount % LOG_INFO_FREQUENCY == 0) {
+                log.info("showSystemErrorsCount() -> " + actualSysErrorCount);
+            }
+        }
         return systemErrorsCounter.count();
     }
 
@@ -123,5 +144,6 @@ public class DbCnxnViaHibernate {
         String now = DateTimeFormatter.ofPattern(shortDateFormat).format(LocalDateTime.now());
         showSystemErrorsCount(fromDate, now);
         showTotalBuildsCount();
+        loggingCount++;
     }
 }
