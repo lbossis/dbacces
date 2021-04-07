@@ -1,13 +1,27 @@
 package org.acme.micrometer;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @Entity
 @Table(name="_archived_buildrecords")
 @Access(value=AccessType.FIELD)
-public class ArchivedBuilds {
-
+@NamedNativeQueries({
+    @NamedNativeQuery(
+            name = "ArchivedBuilds.total_count",
+            query = "SELECT count(*) FROM ArchivedBuilds WHERE temporaryBuild = false"),
+    @NamedNativeQuery(
+            name = "ArchivedBuilds.system_errors_count",
+            query = "SELECT count(*) FROM ArchivedBuilds WHERE temporaryBuild = false" +
+                    " AND status = 'SYSTEM_ERROR'"),
+    @NamedNativeQuery(
+            name = "ArchivedBuilds.system_errors_from_to_count",
+            query = "SELECT count(*) FROM ArchivedBuilds WHERE temporaryBuild = false" +
+                    " AND status = 'SYSTEM_ERROR'" +
+                    " AND startTime >= :from AND endTime <= :to")
+})
+public class ArchivedBuilds implements Serializable {
     @Id
     @Column(name = "buildrecord_id", unique = true, nullable = false)
     private int buildRecordId;
