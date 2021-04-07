@@ -85,14 +85,21 @@ public class DbCnxnViaHibernate {
     @Path("/total_count")
     public double showTotalBuildsCount() {
         double cnt = getTotalBuildsCount();
-        System.out.println("showTotalBuildsCount() -> " + cnt);
-        totalBuildsCounter.increment(cnt);
+        double currentTotalCount = totalBuildsCounter.count();
+        double delta = cnt - currentTotalCount;
+        if (delta > 0) {
+            totalBuildsCounter.increment(delta);
+            log.info("showTotalBuildsCount: count increased -> " + cnt);
+
+        } else {
+            log.info("showTotalBuildsCount: count has not changed -> " + cnt);
+        }
         return totalBuildsCounter.count();
     }
 
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    @Path("/syserr_count/{from}/{to}")
+    @Produces("application/json")
+    @Path("/syserr_count?from={from}&to={to}")
     public double showSystemErrorsCount(@PathParam String from, @PathParam String to) {
         if (from == null || from.isEmpty()) {
             log.error("Invalid 'from' parameter: " + from);
@@ -111,7 +118,7 @@ public class DbCnxnViaHibernate {
         return systemErrorsCounter.count();
     }
 
-    @Scheduled(every = "60s", delay = 0)
+    @Scheduled(every = "180s", delay = 0)
     public void refreshCounters() {
         String now = DateTimeFormatter.ofPattern(shortDateFormat).format(LocalDateTime.now());
         showSystemErrorsCount(fromDate, now);
