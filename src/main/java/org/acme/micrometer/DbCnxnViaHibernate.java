@@ -54,9 +54,9 @@ public class DbCnxnViaHibernate {
     @PostConstruct
     void init() {
         entityManager = emFactory.createEntityManager();
-        totalBuildsCountQry = entityManager.createNamedQuery("ArchivedBuilds.total_count");
-        systemErrorsCountQry = entityManager.createNamedQuery("ArchivedBuilds.system_errors_count");
-        systemErrorsFromToCountQry = entityManager.createNamedQuery("ArchivedBuilds.system_errors_from_to_count");
+        totalBuildsCountQry = entityManager.createNamedQuery("_archived_buildrecords.total_count");
+        systemErrorsCountQry = entityManager.createNamedQuery("_archived_buildrecords.system_errors_count");
+        systemErrorsFromToCountQry = entityManager.createNamedQuery("_archived_buildrecords.system_errors_from_to_count");
         totalBuildsCounter = registry.counter(className + ".total.builds.count");
         systemErrorsCounter = registry.counter(className + ".system.errors.count");
     }
