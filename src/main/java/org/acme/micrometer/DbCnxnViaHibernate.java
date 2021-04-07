@@ -2,9 +2,9 @@ package org.acme.micrometer;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
 import io.quarkus.scheduler.Scheduled;
+import org.jboss.resteasy.annotations.jaxrs.QueryParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,9 +98,9 @@ public class DbCnxnViaHibernate {
     }
 
     @GET
-    @Produces("application/json")
-    @Path("/syserr_count?from={from}&to={to}")
-    public double showSystemErrorsCount(@PathParam String from, @PathParam String to) {
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("/syserr_count")
+    public double showSystemErrorsCount(@QueryParam String from, @QueryParam String to) {
         if (from == null || from.isEmpty()) {
             log.error("Invalid 'from' parameter: " + from);
             return -1;
