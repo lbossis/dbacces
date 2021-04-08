@@ -42,21 +42,19 @@ public class DbCnxnViaHibernate {
     @Inject
     MeterRegistry registry;
 
-    private EntityManager entityManager;
+    private Counter totalBuildsCounter;
+    private Counter systemErrorsCounter;
     private Query totalBuildsCountQry;
     private Query systemErrorsCountQry;
     private Query systemErrorsFromToCountQry;
-    private Counter totalBuildsCounter;
-    private Counter systemErrorsCounter;
-    private String fromDate = "1970-01-01";
     private long loggingCount = 0;
 
     @PostConstruct
     void init() {
-        entityManager = emFactory.createEntityManager();
-        totalBuildsCountQry = entityManager.createNamedQuery("_archived_buildrecords.total_count");
-        systemErrorsCountQry = entityManager.createNamedQuery("_archived_buildrecords.system_errors_count");
-        systemErrorsFromToCountQry = entityManager.createNamedQuery("_archived_buildrecords.system_errors_from_to_count");
+        EntityManager entityManager = emFactory.createEntityManager();
+        totalBuildsCountQry = entityManager.createNamedQuery("ArchivedBuilds.total_count");
+        systemErrorsCountQry = entityManager.createNamedQuery("ArchivedBuilds.system_errors_count");
+        systemErrorsFromToCountQry = entityManager.createNamedQuery("ArchivedBuilds.system_errors_from_to_count");
         totalBuildsCounter = registry.counter(className + ".total.builds.count");
         systemErrorsCounter = registry.counter(className + ".system.errors.count");
     }
@@ -79,7 +77,7 @@ public class DbCnxnViaHibernate {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/total_count")
-    public double showTotalBuildsCount() {
+    public double refreshTotalBuildsCounter() {
         double currentTotalCount = totalBuildsCounter.count();
         double actualTotalCount = getTotalBuildsCount();
         double delta = actualTotalCount - currentTotalCount;
@@ -90,11 +88,11 @@ public class DbCnxnViaHibernate {
              * and gets incremented to its current database value
              */
             if (currentTotalCount > 0) {
-                log.info("Total count has been incremented -> " + actualTotalCount);
+                log.info("Total counter has been incremented -> " + actualTotalCount);
             }
         } else {
             if (loggingCount % LOG_INFO_FREQUENCY == 0) {
-                log.info("showTotalBuildsCount() -> " + actualTotalCount);
+                log.info("refreshTotalBuildsCounter() -> " + actualTotalCount);
             }
         }
         return totalBuildsCounter.count();
@@ -103,18 +101,18 @@ public class DbCnxnViaHibernate {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/syserr_count")
-    public double showSystemErrorsCount() {
+    public double refreshSystemErrorsCounter() {
         double currentSysErrorsCount = systemErrorsCounter.count();
         double actualSysErrorCount = getSystemErrorsCount();
         double delta = actualSysErrorCount - currentSysErrorsCount;
         if (delta > 0) {
             systemErrorsCounter.increment(delta);
             if (currentSysErrorsCount > 0) {
-                log.info("System errors count has been incremented -> " + actualSysErrorCount);
+                log.info("System errors counter has been incremented -> " + actualSysErrorCount);
             }
         } else {
             if (loggingCount % LOG_INFO_FREQUENCY == 0) {
-                log.info("showSystemErrorsCount() -> " + actualSysErrorCount);
+                log.info("refreshSystemErrorsCounter() -> " + actualSysErrorCount);
             }
         }
         return systemErrorsCounter.count();
@@ -123,7 +121,7 @@ public class DbCnxnViaHibernate {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/syserr_from_to_count")
-    public double showSystemErrorsFromToCount(@QueryParam String from, @QueryParam String to) {
+    public double refreshSystemErrorsFromToCounter(@QueryParam String from, @QueryParam String to) {
         if (from == null || from.isEmpty()) {
             log.error("Invalid 'from' parameter: " + from);
             return 0;
@@ -133,7 +131,6 @@ public class DbCnxnViaHibernate {
             return 0;
         }
         double currentSysErrorsCount = systemErrorsCounter.count();
-        fromDate = from;
         Date javaDateFrom = symbolic2javaDate(from);
         Date javaDateTo = symbolic2javaDate(to);
         double actualSysErrorCount = getSystemErrorsFromToCount(javaDateFrom, javaDateTo);
@@ -141,11 +138,11 @@ public class DbCnxnViaHibernate {
         if (delta > 0) {
             systemErrorsCounter.increment(delta);
             if (currentSysErrorsCount > 0) {
-                log.info("System errors count has been incremented -> " + actualSysErrorCount);
+                log.info("System errors counter has been incremented -> " + actualSysErrorCount);
             }
         } else {
             if (loggingCount % LOG_INFO_FREQUENCY == 0) {
-                log.info("showSystemErrorsFromToCount() -> " + actualSysErrorCount);
+                log.info("refreshSystemErrorsFromToCounter() -> " + actualSysErrorCount);
             }
         }
         return systemErrorsCounter.count();
@@ -153,10 +150,8 @@ public class DbCnxnViaHibernate {
 
     @Scheduled(every = "180s", delay = 0)
     public void refreshCounters() {
-        // String now = DateTimeFormatter.ofPattern(shortDateFormat).format(LocalDateTime.now());
-        // showSystemErrorsFromToCount(fromDate, now);
-        showSystemErrorsCount();
-        showTotalBuildsCount();
+        refreshSystemErrorsCounter();
+        refreshTotalBuildsCounter();
         loggingCount++;
     }
 

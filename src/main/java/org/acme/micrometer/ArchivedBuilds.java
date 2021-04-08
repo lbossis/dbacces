@@ -5,23 +5,23 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 
 @Entity
-//@Table(name="_archived_buildrecords")
-//@Access(value=AccessType.FIELD)
-@NamedNativeQueries({
-    @NamedNativeQuery(
-            name = "_archived_buildrecords.total_count",
-            query = "SELECT count(*) FROM _archived_buildrecords WHERE temporaryBuild = false"),
-    @NamedNativeQuery(
-            name = "_archived_buildrecords.system_errors_count",
-            query = "SELECT count(*) FROM _archived_buildrecords WHERE temporaryBuild = false" +
+@Table(name="_archived_buildrecords")
+@Access(value=AccessType.FIELD)
+@NamedQueries({
+    @NamedQuery(
+            name = "ArchivedBuilds.total_count",
+            query = "SELECT count(*) FROM ArchivedBuilds a WHERE a.temporaryBuild = false"),
+    @NamedQuery(
+            name = "ArchivedBuilds.system_errors_count",
+            query = "SELECT count(*) FROM ArchivedBuilds a WHERE a.temporaryBuild = false" +
                     " AND status = 'SYSTEM_ERROR'"),
-    @NamedNativeQuery(
-            name = "_archived_buildrecords.system_errors_from_to_count",
-            query = "SELECT count(*) FROM _archived_buildrecords WHERE temporaryBuild = false" +
+    @NamedQuery(
+            name = "ArchivedBuilds.system_errors_from_to_count",
+            query = "SELECT count(*) FROM ArchivedBuilds a WHERE a.temporaryBuild = false" +
                     " AND status = 'SYSTEM_ERROR'" +
                     " AND startTime >= :from AND endTime <= :to")
 })
-public class _archived_buildrecords implements Serializable {
+public class ArchivedBuilds implements Serializable {
     @Id
     @Column(name = "buildrecord_id", unique = true, nullable = false)
     private int buildRecordId;
