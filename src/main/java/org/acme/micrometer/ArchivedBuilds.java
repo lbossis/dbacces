@@ -77,6 +77,34 @@ public class ArchivedBuilds implements Serializable {
     @Column(name = "categorized_error_group")
     private String categorizedErrorGroup;
 
+    @Column(name = "buildconfiguration_id", nullable = true)
+    private int buildconfigurationId;
+
+    @Column(name = "buildconfiguration_rev", nullable = true)
+    private int buildconfigurationRev;
+
+    @Column(name = "buildconfigsetrecord_id", nullable = false)
+    private int buildconfigsetrecordId;
+
+    @Column(name = "productmilestone_id", nullable = false)
+    private int productmilestoneId;
+
+    @Column(name = "project_id", nullable = false)
+    private int projectId;
+
+    @Column(name = "buildenvironment_id", nullable = false)
+    private int buildenvironmentId;
+
+    @Column(name = "productversion_id", nullable = false)
+    private int productversionId;
+
+    @Column(name = "product_id", nullable = false)
+    private int productId;
+
+    @Column(name = "brewpullactive")
+    private boolean brewpullactive;
+
+
     public int getBuildRecordId() {
         return buildRecordId;
     }
@@ -219,5 +247,77 @@ public class ArchivedBuilds implements Serializable {
 
     public void setCategorizedErrorGroup(String categorizedErrorGroup) {
         this.categorizedErrorGroup = categorizedErrorGroup;
+    }
+
+    public int getBuildconfigurationId() {
+        return buildconfigurationId;
+    }
+
+    public void setBuildconfigurationId(int buildconfigurationId) {
+        this.buildconfigurationId = buildconfigurationId;
+    }
+
+    public int getBuildconfigurationRev() {
+        return buildconfigurationRev;
+    }
+
+    public void setBuildconfigurationRev(int buildconfigurationRev) {
+        this.buildconfigurationRev = buildconfigurationRev;
+    }
+
+    public int getBuildconfigsetrecordId() {
+        return buildconfigsetrecordId;
+    }
+
+    public void setBuildconfigsetrecordId(int buildconfigsetrecordId) {
+        this.buildconfigsetrecordId = buildconfigsetrecordId;
+    }
+
+    public int getProductmilestoneId() {
+        return productmilestoneId;
+    }
+
+    public void setProductmilestoneId(int productmilestoneId) {
+        this.productmilestoneId = productmilestoneId;
+    }
+
+    public int getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(int projectId) {
+        this.projectId = projectId;
+    }
+
+    public int getBuildenvironmentId() {
+        return buildenvironmentId;
+    }
+
+    public void setBuildenvironmentId(int buildenvironmentId) {
+        this.buildenvironmentId = buildenvironmentId;
+    }
+
+    public int getProductversionId() {
+        return productversionId;
+    }
+
+    public void setProductversionId(int productversionId) {
+        this.productversionId = productversionId;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
+    }
+
+    public boolean isBrewpullactive() {
+        return brewpullactive;
+    }
+
+    public void setBrewpullactive(boolean brewpullactive) {
+        this.brewpullactive = brewpullactive;
     }
 }
